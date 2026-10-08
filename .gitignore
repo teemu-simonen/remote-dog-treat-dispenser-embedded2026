@@ -1,0 +1,13 @@
+# Zephyr build directory
+build/
+
+# VS Code
+.vscode/
+
+# Python
+__pycache__/
+*.pyc
+
+# OS files
+.DS_Store
+Thumbs.db
