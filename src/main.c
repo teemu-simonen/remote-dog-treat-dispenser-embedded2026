@@ -2,124 +2,57 @@
 #include <zephyr/logging/log.h>
 #include <stdbool.h>
 
+#include "servo.h"
+#include "status_led.h"
+#include "ble_service.h"
+
+
 LOG_MODULE_REGISTER(dog_dispenser, LOG_LEVEL_INF);
-
-/* -----------------------------
- * Application state
- * ----------------------------- */
-
-static bool hatch_open = false;
-
-/* -----------------------------
- * Servo functions
- * ----------------------------- */
-
-static void servo_open(void)
-{
-    LOG_INF("Servo: opening hatch");
-
-    /*
-     * TODO:
-     * Send PWM signal to servo.
-     */
-}
-
-static void servo_close(void)
-{
-    LOG_INF("Servo: closing hatch");
-
-    /*
-     * TODO:
-     * Send PWM signal to servo.
-     */
-}
-
-/* -----------------------------
- * Hatch functions
- * ----------------------------- */
-
-static void hatch_open(void)
-{
-    servo_open();
-    hatch_open = true;
-
-    LOG_INF("Hatch OPEN");
-}
-
-static void hatch_close(void)
-{
-    servo_close();
-    hatch_open = false;
-
-    LOG_INF("Hatch CLOSED");
-}
-
-static void hatch_toggle(void)
-{
-    if (hatch_open) {
-        hatch_close();
-    } else {
-        hatch_open();
-    }
-}
-
-/* -----------------------------
- * LED
- * ----------------------------- */
-
-static void led_init(void)
-{
-    /*
-     * TODO:
-     * Configure status LED GPIO.
-     */
-}
-
-static void led_set_connected(bool connected)
-{
-    /*
-     * TODO:
-     * Connected:
-     *     LED ON
-     *
-     * Disconnected:
-     *     LED blinking
-     */
-}
-
-/* -----------------------------
- * Bluetooth
- * ----------------------------- */
-
-static int bluetooth_init(void)
-{
-    /*
-     * TODO:
-     *
-     * 1. Initialize Bluetooth.
-     * 2. Create GATT service.
-     * 3. Create hatch-control characteristic.
-     * 4. Start advertising.
-     */
-
-    LOG_INF("Bluetooth initialized");
-
-    return 0;
-}
-
-/* -----------------------------
- * Main
- * ----------------------------- */
 
 int main(void)
 {
     LOG_INF("Dog Treat Dispenser");
 
-    led_init();
+    int ret = servo_init();
 
-    bluetooth_init();
+    if (ret != 0) {
+        LOG_WRN("Servo not available yet: %d", ret);
+    }
 
-    LOG_INF("System ready");
+    int ret2 = status_led_init();
+
+    if (ret2 < 0) {
+        LOG_ERR("Status LED initialization failed: %d", ret2);
+        return 0;
+    }
+
+
+    /* Simulate waiting for a BLE connection. */
+    status_led_set_state(STATUS_LED_ADVERTISING);
+    k_sleep(K_SECONDS(5));
+
+    /* Simulate a phone connecting. */
+    status_led_set_state(STATUS_LED_CONNECTED);
+    k_sleep(K_SECONDS(3));
+
+    /* Simulate a command arriving from the phone. */
+    status_led_command_flash();
+    k_sleep(K_SECONDS(3));
+
+    /* Return to the connected state. */
+    status_led_set_state(STATUS_LED_CONNECTED);
+
+
+    ret = ble_service_init();
+
+    if (ret < 0) {
+        LOG_ERR("BLE initialization failed: %d", ret);
+        status_led_set_state(STATUS_LED_BOOT);
+        return 0;
+    }
+
+    LOG_INF("Dispenser is advertising");
+
 
     while (1) {
 
