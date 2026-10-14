@@ -6,4 +6,7 @@ project(dog_treat_dispenser)
 
 target_sources(app PRIVATE
     src/main.c
+    src/servo.c
+    src/status_led.c
+    src/ble_service.c
 )
