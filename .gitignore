@@ -1,6 +1,10 @@
+<<<<<<< HEAD
 # editors
 *.swp
 *~
 
 # build
 /build*/
+=======
+build*/
+>>>>>>> 8ac7c7586f60419b73b2e1f6d33a28ed7058a853
