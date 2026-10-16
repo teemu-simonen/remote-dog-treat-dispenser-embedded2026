@@ -6,7 +6,7 @@
 #include <zephyr/settings/settings.h>
 
 #define USER_LED DK_LED1
-#define DEVICE_NAME "Led_Remote_Switch"
+#define DEVICE_NAME "Dog_Treat_Dispenser"
 
 // Bluetooth advertise
 static const struct bt_data ad[] = {
