@@ -7,14 +7,14 @@
 #include <zephyr/drivers/pwm.h> /* 1. Include PWM header */
 
 #define USER_LED DK_LED1
-#define DEVICE_NAME "Led_Remote_Switch"
+#define DEVICE_NAME "Dog_treat_dispenser"
 
 /* 2. Get the servo node from the overlay file */
 static const struct pwm_dt_spec servo = PWM_DT_SPEC_GET(DT_NODELABEL(servo));
 
 /* SG90 pulse widths (500us = 0 deg, 1500us = 90 deg, 2500us = 180 deg) */
-#define SERVO_CLOSED_PULSE PWM_USEC(1000) /* ~45 degrees */
-#define SERVO_OPEN_PULSE   PWM_USEC(2000) /* ~135 degrees */
+#define SERVO_CLOSED_PULSE PWM_USEC(600) /* ~45 degrees */
+#define SERVO_OPEN_PULSE   PWM_USEC(2400) /* ~135 degrees */
 
 // Bluetooth advertise
 static const struct bt_data ad[] = {
@@ -36,19 +36,29 @@ BT_CONN_CB_DEFINE(conn_callbacks) = {
     .disconnected = disconnected,
 };
 
-// LED + Servo logic
+// LED + Servo logic with auto-detach to prevent brownouts
 static void app_led_cb(bool led_state) {
     dk_set_led(USER_LED, led_state);
     printk("Turned LED1 %s\n", led_state ? "ON" : "OFF");
 
-    /* 3. Move the servo based on the Bluetooth LED toggle */
+    /* 1. Pick the pulse width based on phone toggle state */
     uint32_t pulse = led_state ? SERVO_OPEN_PULSE : SERVO_CLOSED_PULSE;
+    
+    /* 2. Move the servo */
     int err = pwm_set_pulse_dt(&servo, pulse);
     if (err) {
         printk("PWM set failed (err %d)\n", err);
+        return;
     }
-}
 
+    /* 3. Wait 500ms for the SG90 to reach its destination */
+    k_msleep(500);
+
+    /* 4. Cut the PWM signal (width = 0) so the motor stops holding/buzzing.
+          This prevents stall current when it hits the box limit, 
+          stopping the board from browning out and resetting! */
+    pwm_set_pulse_dt(&servo, 0);
+}
 static struct bt_lbs_cb lbs_callbacks = {
     .led_cb = app_led_cb
 };
