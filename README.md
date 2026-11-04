@@ -15,7 +15,6 @@ It utilizes the Nordic LED Button Service (LBS) to receive commands from your ph
 * **Development Board:** [Nordic nRF52833-DK](https://www.nordicsemi.com/Products/Development-hardware/nrf52833-dk)
 * **Actuator:** SG90 Micro Servo Motor (or equivalent 5V hobby servo)
 * **Jumper Wires:** Female-to-Female or Male-to-Female depending on your headers
-* **Chassis:** A 3D-printed or cardboard box to hold the treats and mount the servo.
 * **Breadboard:** A breadboard for connecting the batterypack
 * **Batterypack:** A batterypack to power the servo motor
 
